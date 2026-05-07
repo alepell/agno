@@ -1,6 +1,8 @@
 from agno.agent import Agent
 from agno.tools.tavily import TavilyTools
 from agno.models.openai import OpenAIChat
+from fastapi.middleware.cors import CORSMiddleware
+from agno.os import AgentOS
 
 # from agno.models.groq import Groq
 from dotenv import load_dotenv
@@ -22,10 +24,20 @@ def celsius_to_fh(temperatura_celsius: float):
 
 
 agent = Agent(
+    name="Agente do Tempo",
     model=OpenAIChat(id="gpt-5.4-mini"),
     tools=[TavilyTools(), celsius_to_fh],
 )
 
-agent.print_response(
-    "Use suas ferramentas para pesquisar a temperatura de hoje em Sao Paulo em Fahrenheit, mostre em uma tabela comparando celsius e fahrenheit"
+agent_os = AgentOS(agents=[agent])
+
+app = agent_os.get_app()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://app.agno.com", "http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=True,
 )
+# agent.print_response("Use suas ferramentas para pesquisar a temperatura de hoje em Sao Paulo em Fahrenheit, mostre em uma tabela comparando celsius e fahrenheit")
